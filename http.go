@@ -42,7 +42,7 @@ func _PrintLocalDial(network, addr string) (net.Conn, error) {
 	return conn, err
 }
 
-func PostUrlencoded(address string, data map[string]string) ([]byte, error) {
+func PostUrlencoded(address string, isKeep bool,data map[string]string) ([]byte, error) {
 	u := url.Values{}
 	for k, v := range data {
 		u.Add(k, v)
@@ -51,27 +51,37 @@ func PostUrlencoded(address string, data map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		resp.Body.Close()
-		io.Copy(ioutil.Discard, resp.Body)
-	}()
+	if isKeep{
+		defer func() {
+			resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body)
+		}()
+	}else {
+		resp.Close=true
+	}
+
 	return ioutil.ReadAll(resp.Body)
 }
 
-func PostRawJson(address string, data []byte) ([]byte, error) {
+func PostRawJson(address string,isKeep bool, data []byte) ([]byte, error) {
 	resp, err := httpInstance().Post(address, "application/json;utf-8", bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		resp.Body.Close()
-		io.Copy(ioutil.Discard, resp.Body)
-	}()
+	if isKeep{
+		defer func() {
+			resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body)
+		}()
+
+	}else {
+		resp.Close=true
+	}
 
 	return ioutil.ReadAll(resp.Body)
 }
 
-func GetUrlencoded(address string, data map[string]string) ([]byte, error) {
+func GetUrlencoded(address string, isKeep bool,data map[string]string) ([]byte, error) {
 	u, _ := url.Parse(address)
 	q := u.Query()
 	for k, v := range data {
@@ -82,9 +92,14 @@ func GetUrlencoded(address string, data map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		resp.Body.Close()
-		io.Copy(ioutil.Discard, resp.Body)
-	}()
+	if isKeep{
+		defer func() {
+			resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body)
+		}()
+	}else {
+		resp.Close=true
+	}
+
 	return ioutil.ReadAll(resp.Body)
 }
