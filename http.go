@@ -3,7 +3,6 @@ package netask
 import (
 	"net"
 	"time"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -36,13 +35,13 @@ func _PrintLocalDial(network, addr string) (net.Conn, error) {
 	if err != nil {
 		return conn, err
 	}
-
-	fmt.Println("connect done, use", conn.LocalAddr().String())
+	//print what host to use
+	//fmt.Println("connect done, use", conn.LocalAddr().String())
 
 	return conn, err
 }
 
-func PostUrlencoded(address string, isKeep bool,data map[string]string) ([]byte, error) {
+func PostUrlencoded(address string, isKeep bool, data map[string]string) ([]byte, error) {
 	u := url.Values{}
 	for k, v := range data {
 		u.Add(k, v)
@@ -51,37 +50,53 @@ func PostUrlencoded(address string, isKeep bool,data map[string]string) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	if isKeep{
+	if isKeep {
 		defer func() {
 			resp.Body.Close()
 			io.Copy(ioutil.Discard, resp.Body)
 		}()
-	}else {
-		resp.Close=true
+	} else {
+		resp.Close = true
 	}
 
 	return ioutil.ReadAll(resp.Body)
 }
 
-func PostRawJson(address string,isKeep bool, data []byte) ([]byte, error) {
+func PostRawJson(address string, isKeep bool, data []byte) ([]byte, error) {
 	resp, err := httpInstance().Post(address, "application/json;utf-8", bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
-	if isKeep{
+	if isKeep {
 		defer func() {
 			resp.Body.Close()
 			io.Copy(ioutil.Discard, resp.Body)
 		}()
-
-	}else {
-		resp.Close=true
+	} else {
+		resp.Close = true
 	}
 
 	return ioutil.ReadAll(resp.Body)
 }
 
-func GetUrlencoded(address string, isKeep bool,data map[string]string) ([]byte, error) {
+func Post(address, contentType string, isKeep bool, data []byte) ([]byte, error) {
+	resp, err := httpInstance().Post(address, contentType, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	if isKeep {
+		defer func() {
+			resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body)
+		}()
+	} else {
+		resp.Close = true
+	}
+
+	return ioutil.ReadAll(resp.Body)
+}
+
+func GetUrlencoded(address string, isKeep bool, data map[string]string) ([]byte, error) {
 	u, _ := url.Parse(address)
 	q := u.Query()
 	for k, v := range data {
@@ -92,13 +107,13 @@ func GetUrlencoded(address string, isKeep bool,data map[string]string) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
-	if isKeep{
+	if isKeep {
 		defer func() {
 			resp.Body.Close()
 			io.Copy(ioutil.Discard, resp.Body)
 		}()
-	}else {
-		resp.Close=true
+	} else {
+		resp.Close = true
 	}
 
 	return ioutil.ReadAll(resp.Body)
