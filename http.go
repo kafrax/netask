@@ -118,3 +118,22 @@ func GetUrlencoded(address string, isKeep bool, data map[string]string) ([]byte,
 
 	return ioutil.ReadAll(resp.Body)
 }
+
+func Get(address string, isKeep bool) ([]byte, error) {
+	u, _ := url.Parse(address)
+
+	resp, err := httpInstance().Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	if isKeep {
+		defer func() {
+			resp.Body.Close()
+			io.Copy(ioutil.Discard, resp.Body)
+		}()
+	} else {
+		resp.Close = true
+	}
+
+	return ioutil.ReadAll(resp.Body)
+}
